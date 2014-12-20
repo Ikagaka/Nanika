@@ -1,0 +1,12 @@
+{
+	"name": "Nanika",
+	"description": "Nanika - Nanika",
+	"main": "Nanika.js",
+	"ignore": [
+		"**/.*",
+		"bower_components",
+		"node_modules",
+		"npm-debug.log",
+		"coverage"
+	]
+}
