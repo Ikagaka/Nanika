@@ -49,15 +49,18 @@ class Nanika extends EventEmitter
 		balloonpath = @profile.profile.balloonpath || @nanikamanager.profile.profile.balloonpath
 		Promise.all [@load_ghost(), @materialize_named(shellpath, balloonpath)]
 		.then ([ghost]) =>
-			@ghost = ghost
-			@resource = {}
-			@protocol_version = '2.6'
-			@transaction = new Promise (resolve) -> resolve()
-			@initialize_plugins()
-			@state = 'running'
-			@log "materialized"
-			@emit 'materialized'
-			@named.load()
+			new Promise (resolve, reject) =>
+				@ghost = ghost
+				@resource = {}
+				@protocol_version = '2.6'
+				@transaction = new Promise (resolve) -> resolve()
+				@initialize_plugins()
+				@state = 'running'
+				@log "materialized"
+				@on 'version.set', =>
+					resolve()
+				@emit 'materialized'
+				@named.load()
 		.catch @throw
 	initialize_plugins: ->
 		for name, {initialize} of @plugins
