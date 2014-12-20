@@ -52,7 +52,7 @@ Plugins
 
     NanikaPlugin.foo = {initialize: function(nanika){...}, destroy: function(nanika){...}};
 
-see [NanikaDefaultPlugin]()
+see [NanikaDefaultPlugin](https://github.com/Ikagaka/NanikaDefaultPlugin)
 
 Event Definitions
 --------------------------
@@ -66,7 +66,7 @@ Event Definitions
       }
     };
 
-see [NanikaDefaultEventDefinition]()
+see [NanikaDefaultEventDefinition](https://github.com/Ikagaka/NanikaDefaultEventDefinition)
 
 License
 --------------------------
