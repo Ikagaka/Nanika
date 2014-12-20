@@ -94,6 +94,7 @@ class Nanika extends EventEmitter
 			request_definition = event_definition.request
 			if request_definition instanceof Function
 				{method, submethod, id, headers} = request_definition(@, request_args, optionals)
+				method ?= 'GET'
 			else if request_definition instanceof Object
 				headers_definition = request_definition.headers
 				if headers_definition instanceof Function
@@ -154,7 +155,7 @@ class Nanika extends EventEmitter
 					unless name == value_name
 						response_args[name] = value
 			@emit "response.#{event}", response_args, optionals
-			if method == 'GET' and (submethod == 'Sentence' or not submethod?)
+			if method == 'GET' and (not submethod? or submethod == 'Sentence')
 				if response_args.value? and (typeof response_args.value == "string" or response_args.value instanceof String)
 					@ssp.play response_args.value, 'finish': => @emit "ssp.finish.#{event}", response_args, optionals
 			if callback?
