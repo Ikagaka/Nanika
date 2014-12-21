@@ -99,7 +99,12 @@
           var ghost;
           ghost = _arg[0];
           return new Promise(function(resolve, reject) {
+            var _base;
             _this.ghost = ghost;
+            if ((_base = _this.profile.profile).boot_count == null) {
+              _base.boot_count = 0;
+            }
+            _this.profile.profile.boot_count++;
             _this.resource = {};
             _this.protocol_version = '2.6';
             _this.transaction = new Promise(function(resolve) {
@@ -170,7 +175,7 @@
       return delete this.plugins[name];
     };
 
-    Nanika.prototype.request = function(event, request_args, callback, optionals) {
+    Nanika.prototype.request = function(event, request_args, callback, ssp_callbacks, optionals) {
       var event_definition, method, submethod;
       method = null;
       submethod = null;
@@ -275,10 +280,19 @@
           }
           _this.emit("response." + event, response_args, optionals);
           if (method === 'GET' && ((submethod == null) || submethod === 'Sentence')) {
-            if ((response_args.value != null) && (typeof response_args.value === "string" || response_args.value instanceof String)) {
+            if (response_args.value && (typeof response_args.value === "string" || response_args.value instanceof String)) {
               _this.ssp.play(response_args.value, {
-                'finish': function() {
-                  return _this.emit("ssp.finish." + event, response_args, optionals);
+                finish: function() {
+                  _this.emit("ssp.finish." + event, response_args, optionals);
+                  return ssp_callbacks != null ? typeof ssp_callbacks.finish === "function" ? ssp_callbacks.finish(response_args, response) : void 0 : void 0;
+                },
+                reject: function() {
+                  _this.emit("ssp.reject." + event, response_args, optionals);
+                  return ssp_callbacks != null ? typeof ssp_callbacks.reject === "function" ? ssp_callbacks.reject(response_args, response) : void 0 : void 0;
+                },
+                "break": function() {
+                  _this.emit("ssp.break." + event, response_args, optionals);
+                  return ssp_callbacks != null ? typeof ssp_callbacks["break"] === "function" ? ssp_callbacks["break"](response_args, response) : void 0 : void 0;
                 }
               });
             }
@@ -412,11 +426,12 @@
       })(this));
     };
 
-    Nanika.prototype.halt = function() {
+    Nanika.prototype.halt = function(event, args, optionals) {
       if (this.state === 'halted') {
         return;
       }
-      this.emit('halt');
+      this.emit("halt." + event, args, optionals);
+      this.emit('halt', event, args, optionals);
       this.state = 'halted';
       this.transaction = null;
       this.vanish_named();
@@ -427,7 +442,8 @@
       })(this)).then((function(_this) {
         return function(directory) {
           _this.storage.ghost_master(_this.ghostpath, new NanikaDirectory(directory));
-          _this.emit('halted');
+          _this.emit("halted." + event, args, optionals);
+          _this.emit('halted', event, args, optionals);
           return _this.removeAllListeners();
         };
       })(this));

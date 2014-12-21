@@ -51,6 +51,8 @@ class Nanika extends EventEmitter
 		.then ([ghost]) =>
 			new Promise (resolve, reject) =>
 				@ghost = ghost
+				@profile.profile.boot_count ?= 0
+				@profile.profile.boot_count++
 				@resource = {}
 				@protocol_version = '2.6'
 				@transaction = new Promise (resolve) -> resolve()
@@ -80,7 +82,7 @@ class Nanika extends EventEmitter
 		plugin = @plugins[name]
 		if plugin.destroy? then plugin.destroy(@)
 		delete @plugins[name]
-	request: (event, request_args, callback, optionals) ->
+	request: (event, request_args, callback, ssp_callbacks, optionals) ->
 		method = null
 		submethod = null
 		event_definition = @eventdefinitions[event]
@@ -156,8 +158,17 @@ class Nanika extends EventEmitter
 						response_args[name] = value
 			@emit "response.#{event}", response_args, optionals
 			if method == 'GET' and (not submethod? or submethod == 'Sentence')
-				if response_args.value? and (typeof response_args.value == "string" or response_args.value instanceof String)
-					@ssp.play response_args.value, 'finish': => @emit "ssp.finish.#{event}", response_args, optionals
+				if response_args.value and (typeof response_args.value == "string" or response_args.value instanceof String)
+					@ssp.play response_args.value,
+						finish: =>
+							@emit "ssp.finish.#{event}", response_args, optionals
+							ssp_callbacks?.finish?(response_args, response)
+						reject: =>
+							@emit "ssp.reject.#{event}", response_args, optionals
+							ssp_callbacks?.reject?(response_args, response)
+						break: =>
+							@emit "ssp.break.#{event}", response_args, optionals
+							ssp_callbacks?.break?(response_args, response)
 			if callback?
 				callback(response_args, response)
 			return
@@ -245,10 +256,11 @@ class Nanika extends EventEmitter
 			@emit "response_raw.#{id}", response
 			if response.headers.header.Charset? then @charset = response.headers.header.Charset
 			response
-	halt: ->
+	halt: (event, args, optionals) ->
 		if @state == 'halted'
 			return
-		@emit 'halt'
+		@emit "halt.#{event}", args, optionals
+		@emit 'halt', event, args, optionals
 		@state = 'halted'
 		@transaction = null
 		@vanish_named()
@@ -257,7 +269,8 @@ class Nanika extends EventEmitter
 			@ghost.pull()
 		.then (directory) =>
 			@storage.ghost_master(@ghostpath, new NanikaDirectory(directory))
-			@emit 'halted'
+			@emit "halted.#{event}", args, optionals
+			@emit 'halted', event, args, optionals
 			@removeAllListeners()
 		return
 	change_named: (shellpath, balloonpath) ->

@@ -35,13 +35,22 @@ start transaction and fire "materialize" event.
 
 plugins should add event listeners on "materialize" events.
 
-### request(event, request_args, callback, optionals)
+### request(event, request_args, callback, ssp_callbacks, optionals)
 
     nanika.request('close');
     nanika.request('close', {reason: 'user'});
     nanika.request('name', null, function(args){console.log(args.value);});
+    nanika.request('close', {reason: 'user'}, function(args){
+      if(args.value == null || ! args.value.length){
+        console.log('close');
+      }
+    }, {
+      finish: function(args){console.log('close');},
+      reject: function(args){console.log('close canceled');},
+      break: function(args){console.log('close canceled');},
+    });
 
-request event and do response routine ("GET Sentence" and has value then play sakurascript) and callback(args, response).
+request event, do response routine ("GET Sentence" and has value then play sakurascript), callback(args, response) and ssp callback(args, response).
 
 ### halt()
 
