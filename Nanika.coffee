@@ -287,7 +287,7 @@ class Nanika extends EventEmitter
 			@emit "halted.#{event}", args, optionals
 			@emit 'halted', args, optionals
 			@removeAllListeners()
-		return
+			return
 	change_named: (shellpath, balloonpath) ->
 		if @named?
 			@vanish_named()

@@ -455,7 +455,7 @@
       this.state = 'halted';
       this.transaction = null;
       this.vanish_named();
-      this.ghost.unload().then((function(_this) {
+      return this.ghost.unload().then((function(_this) {
         return function() {
           return _this.ghost.pull();
         };
@@ -464,7 +464,7 @@
           _this.storage.ghost_master(_this.ghostpath, new NanikaDirectory(directory));
           _this.emit("halted." + event, args, optionals);
           _this.emit('halted', args, optionals);
-          return _this.removeAllListeners();
+          _this.removeAllListeners();
         };
       })(this));
     };
