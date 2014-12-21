@@ -246,7 +246,7 @@
         };
       })(this)).then((function(_this) {
         return function(response) {
-          var name, response_args, response_definition, value, value_name, _ref;
+          var name, response_args, response_definition, result, value, value_name, _ref, _ref1;
           if (response == null) {
             return;
           }
@@ -254,8 +254,18 @@
           if (response_definition != null ? response_definition.args : void 0) {
             response_args = response_definition.args(_this, response);
           } else {
+            response_args = {};
             if (response.status_line.version === '3.0') {
-              value_name = 'Value';
+              if (response.headers.header.Value != null) {
+                response_args.value = response.headers.header.Value;
+              }
+              _ref = response.headers.header;
+              for (name in _ref) {
+                value = _ref[name];
+                if (name !== 'Value') {
+                  response_args[name] = value;
+                }
+              }
             } else {
               if (submethod === 'String') {
                 value_name = 'String';
@@ -266,16 +276,19 @@
               } else {
                 value_name = 'Sentence';
               }
-            }
-            response_args = {};
-            if (response.headers.header[value_name] != null) {
-              response_args.value = response.headers.header[value_name];
-            }
-            _ref = response.headers.header;
-            for (name in _ref) {
-              value = _ref[name];
-              if (name !== value_name) {
-                response_args[name] = value;
+              if (response.headers.header[value_name] != null) {
+                response_args.value = response.headers.header[value_name];
+              }
+              _ref1 = response.headers.header;
+              for (name in _ref1) {
+                value = _ref1[name];
+                if (result = name.match(/^Reference(\d+)$/)) {
+                  response_args["Reference" + (result[1] + 1)] = value;
+                } else if (name === 'To') {
+                  response_args.Reference0 = value;
+                } else if (name !== value_name) {
+                  response_args[name] = value;
+                }
               }
             }
           }

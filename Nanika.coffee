@@ -140,8 +140,13 @@ class Nanika extends EventEmitter
 			if response_definition?.args
 				response_args = response_definition.args(@, response)
 			else
+				response_args = {}
 				if response.status_line.version == '3.0'
-					value_name = 'Value'
+					if response.headers.header.Value?
+						response_args.value = response.headers.header.Value
+					for name, value of response.headers.header
+						unless name == 'Value'
+							response_args[name] = value
 				else
 					if submethod == 'String'
 						value_name = 'String'
@@ -151,12 +156,15 @@ class Nanika extends EventEmitter
 						value_name = 'Status'
 					else
 						value_name = 'Sentence'
-				response_args = {}
-				if response.headers.header[value_name]?
-					response_args.value = response.headers.header[value_name]
-				for name, value of response.headers.header
-					unless name == value_name
-						response_args[name] = value
+					if response.headers.header[value_name]?
+						response_args.value = response.headers.header[value_name]
+					for name, value of response.headers.header
+						if result = name.match /^Reference(\d+)$/
+							response_args["Reference#{result[1] + 1}"] = value
+						else if name == 'To'
+							response_args.Reference0 = value
+						else if name != value_name
+							response_args[name] = value
 			@emit "response.#{event}", response_args, optionals
 			@emit "response", response_args, optionals
 			if method == 'GET' and (not submethod? or submethod == 'Sentence')
