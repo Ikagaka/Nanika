@@ -63,6 +63,7 @@ class Nanika extends EventEmitter
 					resolve()
 				@emit 'materialized'
 				@named.load()
+				@
 		.catch @throw
 	initialize_plugins: ->
 		for name, {initialize} of @plugins

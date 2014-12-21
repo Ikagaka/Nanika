@@ -117,7 +117,8 @@
               return resolve();
             });
             _this.emit('materialized');
-            return _this.named.load();
+            _this.named.load();
+            return _this;
           });
         };
       })(this))["catch"](this["throw"]);
