@@ -60,10 +60,9 @@ class Nanika extends EventEmitter
 				@state = 'running'
 				@log "materialized"
 				@on 'version.set', =>
-					resolve()
+					resolve(@)
 				@emit 'materialized'
 				@named.load()
-				@
 		.catch @throw
 	initialize_plugins: ->
 		for name, {initialize} of @plugins

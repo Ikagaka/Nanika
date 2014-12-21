@@ -114,11 +114,10 @@
             _this.state = 'running';
             _this.log("materialized");
             _this.on('version.set', function() {
-              return resolve();
+              return resolve(_this);
             });
             _this.emit('materialized');
-            _this.named.load();
-            return _this;
+            return _this.named.load();
           });
         };
       })(this))["catch"](this["throw"]);
