@@ -241,7 +241,7 @@
             throw new Error("event definition of [" + event + "] has no valid request definition");
           }
           _this.emit("request." + event, request_args, optionals);
-          _this.emit("request", event, request_args, optionals);
+          _this.emit("request", request_args, optionals);
           return _this.send_request([method, submethod], _this.protocol_version, id, headers);
         };
       })(this)).then((function(_this) {
@@ -280,23 +280,23 @@
             }
           }
           _this.emit("response." + event, response_args, optionals);
-          _this.emit("response", event, response_args, optionals);
+          _this.emit("response", response_args, optionals);
           if (method === 'GET' && ((submethod == null) || submethod === 'Sentence')) {
             if (response_args.value && (typeof response_args.value === "string" || response_args.value instanceof String)) {
               _this.ssp.play(response_args.value, {
                 finish: function() {
                   _this.emit("ssp.finish." + event, response_args, optionals);
-                  _this.emit("ssp.finish", event, response_args, optionals);
+                  _this.emit("ssp.finish", response_args, optionals);
                   return ssp_callbacks != null ? typeof ssp_callbacks.finish === "function" ? ssp_callbacks.finish(response_args, response) : void 0 : void 0;
                 },
                 reject: function() {
                   _this.emit("ssp.reject." + event, response_args, optionals);
-                  _this.emit("ssp.reject", event, response_args, optionals);
+                  _this.emit("ssp.reject", response_args, optionals);
                   return ssp_callbacks != null ? typeof ssp_callbacks.reject === "function" ? ssp_callbacks.reject(response_args, response) : void 0 : void 0;
                 },
                 "break": function() {
                   _this.emit("ssp.break." + event, response_args, optionals);
-                  _this.emit("ssp.break", event, response_args, optionals);
+                  _this.emit("ssp.break", response_args, optionals);
                   return ssp_callbacks != null ? typeof ssp_callbacks["break"] === "function" ? ssp_callbacks["break"](response_args, response) : void 0 : void 0;
                 }
               });
@@ -399,7 +399,7 @@
             }
           }
           _this.emit("request_raw." + id, request);
-          _this.emit("request_raw", id, request);
+          _this.emit("request_raw", request);
           return _this.ghost.request("" + request).then(function(response) {
             return resolve(response);
           })["catch"](function(err) {
@@ -424,7 +424,7 @@
             return;
           }
           _this.emit("response_raw." + id, response);
-          _this.emit("response_raw", id, response);
+          _this.emit("response_raw", response);
           if (response.headers.header.Charset != null) {
             _this.charset = response.headers.header.Charset;
           }
@@ -438,7 +438,7 @@
         return;
       }
       this.emit("halt." + event, args, optionals);
-      this.emit('halt', event, args, optionals);
+      this.emit('halt', args, optionals);
       this.state = 'halted';
       this.transaction = null;
       this.vanish_named();
@@ -450,7 +450,7 @@
         return function(directory) {
           _this.storage.ghost_master(_this.ghostpath, new NanikaDirectory(directory));
           _this.emit("halted." + event, args, optionals);
-          _this.emit('halted', event, args, optionals);
+          _this.emit('halted', args, optionals);
           return _this.removeAllListeners();
         };
       })(this));

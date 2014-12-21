@@ -131,7 +131,7 @@ class Nanika extends EventEmitter
 			else
 				throw new Error "event definition of [#{event}] has no valid request definition"
 			@emit "request.#{event}", request_args, optionals
-			@emit "request", event, request_args, optionals
+			@emit "request", request_args, optionals
 			@send_request [method, submethod], @protocol_version, id, headers
 		.then (response) =>
 			unless response?
@@ -158,21 +158,21 @@ class Nanika extends EventEmitter
 					unless name == value_name
 						response_args[name] = value
 			@emit "response.#{event}", response_args, optionals
-			@emit "response", event, response_args, optionals
+			@emit "response", response_args, optionals
 			if method == 'GET' and (not submethod? or submethod == 'Sentence')
 				if response_args.value and (typeof response_args.value == "string" or response_args.value instanceof String)
 					@ssp.play response_args.value,
 						finish: =>
 							@emit "ssp.finish.#{event}", response_args, optionals
-							@emit "ssp.finish", event, response_args, optionals
+							@emit "ssp.finish", response_args, optionals
 							ssp_callbacks?.finish?(response_args, response)
 						reject: =>
 							@emit "ssp.reject.#{event}", response_args, optionals
-							@emit "ssp.reject", event, response_args, optionals
+							@emit "ssp.reject", response_args, optionals
 							ssp_callbacks?.reject?(response_args, response)
 						break: =>
 							@emit "ssp.break.#{event}", response_args, optionals
-							@emit "ssp.break", event, response_args, optionals
+							@emit "ssp.break", response_args, optionals
 							ssp_callbacks?.break?(response_args, response)
 			if callback?
 				callback(response_args, response)
@@ -241,7 +241,7 @@ class Nanika extends EventEmitter
 				for key, value of headers
 					request.headers.header[key] = ''+value
 			@emit "request_raw.#{id}", request
-			@emit "request_raw", id, request
+			@emit "request_raw", request
 			@ghost.request ""+request
 			.then (response) ->
 				resolve(response)
@@ -260,14 +260,14 @@ class Nanika extends EventEmitter
 				@warn "SHIORI Response is invalid\n[#{response_str}]"
 				return
 			@emit "response_raw.#{id}", response
-			@emit "response_raw", id, response
+			@emit "response_raw", response
 			if response.headers.header.Charset? then @charset = response.headers.header.Charset
 			response
 	halt: (event, args, optionals) ->
 		if @state == 'halted'
 			return
 		@emit "halt.#{event}", args, optionals
-		@emit 'halt', event, args, optionals
+		@emit 'halt', args, optionals
 		@state = 'halted'
 		@transaction = null
 		@vanish_named()
@@ -277,7 +277,7 @@ class Nanika extends EventEmitter
 		.then (directory) =>
 			@storage.ghost_master(@ghostpath, new NanikaDirectory(directory))
 			@emit "halted.#{event}", args, optionals
-			@emit 'halted', event, args, optionals
+			@emit 'halted', args, optionals
 			@removeAllListeners()
 		return
 	change_named: (shellpath, balloonpath) ->
