@@ -213,7 +213,7 @@ class Nanika extends EventEmitter
 					if id == "OnCommunicate" # SHIORI/2.3b
 						request.headers.header["Sender"] = headers["Reference0"]
 						request.headers.header["Sentence"] = headers["Reference1"]
-						request.headers.header["Age"] = "0" # temporary
+						request.headers.header["Age"] = headers.Age || "0"
 						for key, value of headers
 							if result = key.match(/^Reference(\d+)$/)
 								request.headers.header["Reference"+(result[1]-2)] = ''+value

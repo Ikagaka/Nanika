@@ -359,7 +359,7 @@
               if (id === "OnCommunicate") {
                 request.headers.header["Sender"] = headers["Reference0"];
                 request.headers.header["Sentence"] = headers["Reference1"];
-                request.headers.header["Age"] = "0";
+                request.headers.header["Age"] = headers.Age || "0";
                 for (key in headers) {
                   value = headers[key];
                   if (result = key.match(/^Reference(\d+)$/)) {
