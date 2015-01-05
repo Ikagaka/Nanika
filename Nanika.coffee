@@ -20,30 +20,36 @@ class Nanika extends EventEmitter
 		throw err
 	load_ghost: ->
 		@log "initializing ghost"
-		ghost = new Ghost("/ghost/#{@ghostpath}/ghost/master/", @storage.ghost_master(@ghostpath).asArrayBuffer(), @options.append_path)
-		ghost.logging = @options.logging
-		ghost.push()
-		.then ->
-			ghost.load()
-		.then =>
-			@log "ghost loaded"
-			ghost
+		@storage.ghost_master(@ghostpath)
+		.then (directory) =>
+			ghost = new Ghost("/ghost/#{@ghostpath}/ghost/master/", directory.asArrayBuffer(), @options.append_path)
+			ghost.logging = @options.logging
+			ghost.push()
+			.then ->
+				ghost.load()
+			.then =>
+				@log "ghost loaded"
+				ghost
 	load_shell: (shellpath) ->
 		@log "initializing shell"
-		shell = new Shell(@storage.shell(@ghostpath, shellpath).asArrayBuffer())
-		shell.load()
-		.then =>
-			@log "shell loaded"
-			@profile.profile.shellpath = shellpath
-			shell
+		@storage.shell(@ghostpath, shellpath)
+		.then (directory) =>
+			shell = new Shell(directory.asArrayBuffer())
+			shell.load()
+			.then =>
+				@log "shell loaded"
+				@profile.profile.shellpath = shellpath
+				shell
 	load_balloon: (balloonpath) ->
 		@log "initializing balloon"
-		balloon = new Balloon(@storage.balloon(balloonpath).asArrayBuffer())
-		balloon.load()
-		.then =>
-			@log "balloon loaded"
-			@profile.profile.balloonpath = balloonpath
-			balloon
+		@storage.balloon(balloonpath)
+		.then (directory) =>
+			balloon = new Balloon(directory.asArrayBuffer())
+			balloon.load()
+			.then =>
+				@log "balloon loaded"
+				@profile.profile.balloonpath = balloonpath
+				balloon
 	materialize: ->
 		shellpath = @profile.profile.shellpath || 'master'
 		balloonpath = @profile.profile.balloonpath || @nanikamanager.profile.profile.balloonpath
@@ -284,6 +290,7 @@ class Nanika extends EventEmitter
 			@ghost.pull()
 		.then (directory) =>
 			@storage.ghost_master(@ghostpath, new NanikaDirectory(directory))
+		.then =>
 			@emit "halted.#{event}", args, optionals
 			@emit 'halted', args, optionals
 			@removeAllListeners()
