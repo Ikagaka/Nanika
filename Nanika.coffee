@@ -4,7 +4,7 @@ NanikaDirectory = @NanikaDirectory
 EventEmitter = @EventEmitter2
 
 class Nanika extends EventEmitter
-	constructor: (@nanikamanager, @storage, @namedmanager, @ghostpath, @profile, @plugins={}, @eventdefinitions={}, @options={}) ->
+	constructor: (@nanikamanager, @storage, @namedmanager, @ghostpath, @plugins={}, @eventdefinitions={}, @options={}) ->
 		@setMaxListeners(0)
 		@charset = 'UTF-8'
 		@sender = 'Ikagaka'
@@ -38,7 +38,7 @@ class Nanika extends EventEmitter
 			shell.load()
 			.then =>
 				@log "shell loaded"
-				@profile.profile.shellpath = shellpath
+				@profile.shellpath = shellpath
 				shell
 	load_balloon: (balloonpath) ->
 		@log "initializing balloon"
@@ -48,17 +48,19 @@ class Nanika extends EventEmitter
 			balloon.load()
 			.then =>
 				@log "balloon loaded"
-				@profile.profile.balloonpath = balloonpath
+				@profile.balloonpath = balloonpath
 				balloon
 	materialize: ->
-		shellpath = @profile.profile.shellpath || 'master'
-		balloonpath = @profile.profile.balloonpath || @nanikamanager.profile.profile.balloonpath
-		Promise.all [@load_ghost(), @materialize_named(shellpath, balloonpath)]
+		@storage.ghost_profile(@ghostpath)
+		.then (@profile) =>
+			shellpath = @profile.shellpath || 'master'
+			balloonpath = @profile.balloonpath || @nanikamanager.profile.balloonpath
+			Promise.all [@load_ghost(), @materialize_named(shellpath, balloonpath)]
 		.then ([ghost]) =>
 			new Promise (resolve, reject) =>
 				@ghost = ghost
-				@profile.profile.boot_count ?= 0
-				@profile.profile.boot_count++
+				@profile.boot_count ?= 0
+				@profile.boot_count++
 				@resource = {}
 				@protocol_version = '2.6'
 				@transaction = new Promise (resolve) -> resolve()
@@ -290,6 +292,8 @@ class Nanika extends EventEmitter
 			@ghost.pull()
 		.then (directory) =>
 			@storage.ghost_master(@ghostpath, new NanikaDirectory(directory))
+		.then =>
+			@storage.ghost_profile(@ghostpath, @profile)
 		.then =>
 			@emit "halted.#{event}", args, optionals
 			@emit 'halted', args, optionals
