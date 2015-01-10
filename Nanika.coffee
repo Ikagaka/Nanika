@@ -53,10 +53,8 @@ class Nanika extends EventEmitter
 	materialize: ->
 		@storage.ghost_profile(@ghostpath)
 		.then (@profile) =>
-			shellpath = @profile.shellpath || 'master'
-			balloonpath = @profile.balloonpath || @nanikamanager.profile.balloonpath
-			Promise.all [@load_ghost(), @materialize_named(shellpath, balloonpath)]
-		.then ([ghost]) =>
+			@load_ghost()
+		.then (ghost) =>
 			new Promise (resolve, reject) =>
 				@ghost = ghost
 				@profile.boot_count ?= 0
@@ -68,9 +66,16 @@ class Nanika extends EventEmitter
 				@state = 'running'
 				@log "materialized"
 				@on 'version.set', =>
-					resolve(@)
+					resolve()
 				@emit 'materialized'
+		.then =>
+			shellpath = @profile.shellpath || 'master'
+			balloonpath = @profile.balloonpath || @nanikamanager.profile.balloonpath
+			@materialize_named(shellpath, balloonpath)
+			.then =>
 				@named.load()
+		.then =>
+			@
 		.catch @throw
 	initialize_plugins: ->
 		for name, {initialize} of @plugins
@@ -300,23 +305,28 @@ class Nanika extends EventEmitter
 			@removeAllListeners()
 			return
 	change_named: (shellpath, balloonpath) ->
-		@emit 'change_named'
+		@emit 'named.change'
 		if @named?
 			@vanish_named()
 		@materialize_named(shellpath, balloonpath)
 		.then =>
-			@emit 'changed_named'
+			@named.load()
+		.then =>
+			@emit 'named.changed'
 	materialize_named: (shellpath, balloonpath) ->
-		@emit 'materialize_named'
+		@emit 'named.initialize'
+		@emit 'ssp.initialize'
 		Promise.all [@load_shell(shellpath), @load_balloon(balloonpath)]
 		.then ([shell, balloon]) =>
 			@namedid = @namedmanager.materialize(shell, balloon)
 			@named = @namedmanager.named(@namedid)
 			@ssp = new SakuraScriptPlayer(@named)
-			@emit 'materialized_named'
+			@emit 'named.initialized'
+			@emit 'ssp.initialized'
 			return
 	vanish_named: ->
-		@emit 'vanish_named'
+		@emit 'named.vanish'
+		@emit 'ssp.vanish'
 		if @ssp?
 			@ssp.off()
 			delete @ssp
@@ -324,7 +334,8 @@ class Nanika extends EventEmitter
 			@namedmanager.vanish(@namedid)
 			delete @named
 			delete @namedid
-		@emit 'vanished_named'
+		@emit 'named.vanished'
+		@emit 'ssp.vanished'
 
 if module?.exports?
 	module.exports = Nanika
