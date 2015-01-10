@@ -300,17 +300,23 @@ class Nanika extends EventEmitter
 			@removeAllListeners()
 			return
 	change_named: (shellpath, balloonpath) ->
+		@emit 'change_named'
 		if @named?
 			@vanish_named()
 		@materialize_named(shellpath, balloonpath)
+		.then =>
+			@emit 'changed_named'
 	materialize_named: (shellpath, balloonpath) ->
+		@emit 'materialize_named'
 		Promise.all [@load_shell(shellpath), @load_balloon(balloonpath)]
 		.then ([shell, balloon]) =>
 			@namedid = @namedmanager.materialize(shell, balloon)
 			@named = @namedmanager.named(@namedid)
 			@ssp = new SakuraScriptPlayer(@named)
+			@emit 'materialized_named'
 			return
 	vanish_named: ->
+		@emit 'vanish_named'
 		if @ssp?
 			@ssp.off()
 			delete @ssp
@@ -318,6 +324,7 @@ class Nanika extends EventEmitter
 			@namedmanager.vanish(@namedid)
 			delete @named
 			delete @namedid
+		@emit 'vanished_named'
 
 if module?.exports?
 	module.exports = Nanika
