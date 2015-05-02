@@ -8,6 +8,10 @@
 		"test": "mocha"
 	},
 	"dependencies": {
+		"eventemitter2": ">= 0.4.14",
+		"shiorijk": "",
+		"cuttlebone": "",
+		"ikagaka.sakurascriptplayer.js": ""
 	},
 	"devDependencies": {
 		"coffee-script": ">= 1.8.0",

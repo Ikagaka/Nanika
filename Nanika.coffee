@@ -1,7 +1,8 @@
 Promise = @Promise
+ShioriJK = @ShioriJK
 SakuraScriptPlayer = @SakuraScriptPlayer
-NanikaDirectory = @NanikaDirectory
 EventEmitter = @EventEmitter2
+cuttlebone = @cuttlebone
 
 class Nanika extends EventEmitter
 	constructor: (@nanikamanager, @storage, @namedmanager, @ghostpath, @plugins={}, @eventdefinitions={}, @options={}) ->
@@ -18,23 +19,30 @@ class Nanika extends EventEmitter
 	throw: (err) ->
 		alert?(err)
 		throw err
-	load_ghost: ->
-		@log "initializing ghost"
+	load_shiori: ->
+		@log "initializing shiori"
+		console.log @storage.backend
+		console.log @storage.backend.path
+		console.log @storage.backend.path.join
+		dirpath = @storage.ghost_master_path(@ghostpath).replace(/\/?$/, '/')
 		@storage.ghost_master(@ghostpath)
 		.then (directory) =>
-			ghost = new Ghost("/ghost/#{@ghostpath}/ghost/master/", directory.asArrayBuffer(), @options.append_path)
-			ghost.logging = @options.logging
-			ghost.push()
-			.then ->
-				ghost.load()
+			console.log "descript"
+			@ghost = descript: directory.descript
+		.then =>
+			console.log "shioriloader"
+			ShioriLoader.detect_shiori(@storage.backend.fs, dirpath)
+		.then (shiori) =>
+			console.log "load"
+			shiori.load(dirpath)
 			.then =>
-				@log "ghost loaded"
-				ghost
+				@log "shiori loaded"
+				shiori
 	load_shell: (shellpath) ->
 		@log "initializing shell"
 		@storage.shell(@ghostpath, shellpath)
 		.then (directory) =>
-			shell = new Shell(directory.asArrayBuffer())
+			shell = new cuttlebone.Shell(directory.asArrayBuffer())
 			shell.load()
 			.then =>
 				@log "shell loaded"
@@ -44,7 +52,7 @@ class Nanika extends EventEmitter
 		@log "initializing balloon"
 		@storage.balloon(balloonpath)
 		.then (directory) =>
-			balloon = new Balloon(directory.asArrayBuffer())
+			balloon = new cuttlebone.Balloon(directory.asArrayBuffer())
 			balloon.load()
 			.then =>
 				@log "balloon loaded"
@@ -53,10 +61,10 @@ class Nanika extends EventEmitter
 	materialize: ->
 		@storage.ghost_profile(@ghostpath)
 		.then (@profile) =>
-			@load_ghost()
-		.then (ghost) =>
+			@load_shiori()
+		.then (shiori) =>
 			new Promise (resolve, reject) =>
-				@ghost = ghost
+				@shiori = shiori
 				@profile.boot_count ?= 0
 				@profile.boot_count++
 				@resource = {}
@@ -263,7 +271,7 @@ class Nanika extends EventEmitter
 					request.headers.header[key] = ''+value
 			@emit "request_raw.#{id}", request
 			@emit "request_raw", request
-			@ghost.request ""+request
+			@shiori.request ""+request
 			.then (response) ->
 				resolve(response)
 			.catch (err) ->
@@ -292,11 +300,7 @@ class Nanika extends EventEmitter
 		@state = 'halted'
 		@transaction = null
 		@vanish_named()
-		@ghost.unload()
-		.then =>
-			@ghost.pull()
-		.then (directory) =>
-			@storage.ghost_master(@ghostpath, new NanikaDirectory(directory))
+		@shiori.unload()
 		.then =>
 			@storage.ghost_profile(@ghostpath, @profile)
 		.then =>
@@ -339,7 +343,5 @@ class Nanika extends EventEmitter
 
 if module?.exports?
 	module.exports = Nanika
-else if @Ikagaka?
-	@Ikagaka.Nanika = Nanika
 else
 	@Nanika = Nanika
