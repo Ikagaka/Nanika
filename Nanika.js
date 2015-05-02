@@ -53,25 +53,19 @@
     Nanika.prototype.load_shiori = function() {
       var dirpath;
       this.log("initializing shiori");
-      console.log(this.storage.backend);
-      console.log(this.storage.backend.path);
-      console.log(this.storage.backend.path.join);
       dirpath = this.storage.ghost_master_path(this.ghostpath).replace(/\/?$/, '/');
       return this.storage.ghost_master(this.ghostpath).then((function(_this) {
         return function(directory) {
-          console.log("descript");
           return _this.ghost = {
             descript: directory.descript
           };
         };
       })(this)).then((function(_this) {
         return function() {
-          console.log("shioriloader");
           return ShioriLoader.detect_shiori(_this.storage.backend.fs, dirpath);
         };
       })(this)).then((function(_this) {
         return function(shiori) {
-          console.log("load");
           return shiori.load(dirpath).then(function() {
             _this.log("shiori loaded");
             return shiori;

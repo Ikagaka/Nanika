@@ -21,19 +21,13 @@ class Nanika extends EventEmitter
 		throw err
 	load_shiori: ->
 		@log "initializing shiori"
-		console.log @storage.backend
-		console.log @storage.backend.path
-		console.log @storage.backend.path.join
 		dirpath = @storage.ghost_master_path(@ghostpath).replace(/\/?$/, '/')
 		@storage.ghost_master(@ghostpath)
 		.then (directory) =>
-			console.log "descript"
 			@ghost = descript: directory.descript
 		.then =>
-			console.log "shioriloader"
 			ShioriLoader.detect_shiori(@storage.backend.fs, dirpath)
 		.then (shiori) =>
-			console.log "load"
 			shiori.load(dirpath)
 			.then =>
 				@log "shiori loaded"
