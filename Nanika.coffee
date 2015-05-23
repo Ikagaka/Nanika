@@ -21,7 +21,9 @@ class Nanika extends EventEmitter
 		throw err
 	load_shiori: ->
 		@log "initializing shiori"
-		dirpath = @storage.ghost_master_path(@ghostpath).replace(/\/?$/, '/')
+		dirpath = @storage.ghost_master_path(@ghostpath)
+		path_separator = dirpath.match(/([\\\/])/)[1]
+		dirpath = dirpath.replace(new RegExp('\\' + path_separator + '?$'), path_separator)
 		@storage.ghost_master(@ghostpath)
 		.then (directory) =>
 			@ghost = descript: directory.descript
